@@ -142,7 +142,7 @@
       '#1e293b';
 
     const eventLang =
-      (params.get('lang') || 'ms').toLowerCase() === 'ms' ? 'ms' : 'en';
+      (params.get('lang') || '').toLowerCase() === 'ms' ? 'ms' : 'en';
 
     const labels = {
       en: ['Days',  'Hours', 'Minutes','Seconds'],
