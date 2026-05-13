@@ -1,88 +1,96 @@
 <!DOCTYPE html>
 <html lang="ms">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Countdown Embed</title>
 
   <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    body{
-      font-family:Arial,sans-serif;
-      background:transparent;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      min-height:100vh;
-      padding:20px;
-      text-align:center;
+    html, body {
+      width: 100%;
+      height: 100%;
     }
 
-    .wrapper{
-      width:100%;
+    body {
+      font-family: Arial, sans-serif;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
     }
 
-    .title{
-      font-size:38px;
-      font-weight:bold;
-      margin-bottom:25px;
-      line-height:1.3;
-      color:#111827;
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      /* Scale everything as one unit based on container width */
+      width: 100%;
+      padding: 16px;
     }
 
-    .countdown{
-      display:flex;
-      justify-content:center;
-      gap:16px;
-      flex-wrap:wrap;
+    .title {
+      font-size: clamp(16px, 4.5vw, 42px);
+      font-weight: bold;
+      line-height: 1.2;
+      color: #1e293b;
+      white-space: nowrap;          /* never wrap */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
-    .card{
-      background:#1e293b;
-      color:white;
-      min-width:110px;
-      padding:20px;
-      border-radius:14px;
+    .countdown {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      gap: clamp(6px, 1.5vw, 16px);
+      flex-wrap: nowrap;            /* cards always on one row */
+      width: 100%;
+      max-width: 100%;
     }
 
-    .number{
-      font-size:42px;
-      font-weight:bold;
-      line-height:1;
+    .card {
+      background: #1e293b;
+      color: white;
+      flex: 1 1 0;                  /* all cards equal width, shrink together */
+      min-width: 0;                 /* allow flex to shrink below content */
+      padding: clamp(10px, 2vw, 22px) clamp(8px, 1.5vw, 18px);
+      border-radius: clamp(8px, 1.5vw, 14px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .label{
-      margin-top:10px;
-      font-size:14px;
-      opacity:0.85;
-      text-transform:uppercase;
-      letter-spacing:1px;
+    .number {
+      font-size: clamp(18px, 5.5vw, 48px);
+      font-weight: bold;
+      line-height: 1;
+      white-space: nowrap;
     }
 
-    @media (max-width:600px){
-
-      .title{
-        font-size:28px;
-      }
-
-      .card{
-        min-width:90px;
-        padding:16px;
-      }
-
-      .number{
-        font-size:32px;
-      }
-
+    .label {
+      margin-top: clamp(4px, 0.8vw, 10px);
+      font-size: clamp(9px, 1.4vw, 14px);
+      opacity: 0.85;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
     }
   </style>
 </head>
+
 <body>
 
   <div class="wrapper">
@@ -129,43 +137,63 @@
       params.get('date') ||
       '2026-06-01T09:00:00';
 
-    document.getElementById('event-title').innerHTML = eventTitle;
+    const eventColor =
+      params.get('color') ||
+      '#1e293b';
+
+    const eventLang =
+      (params.get('lang') || 'ms').toLowerCase() === 'ms' ? 'ms' : 'en';
+
+    const labels = {
+      en: ['Days',  'Hours', 'Minutes','Seconds'],
+      ms: ['Hari',  'Jam',   'Minit',  'Saat'],
+    };
+
+    // Apply color to cards and title
+    document.querySelectorAll('.card').forEach(el => {
+      el.style.background = eventColor;
+    });
+    document.getElementById('event-title').style.color = eventColor;
+
+    // Apply language labels
+    const langLabels = labels[eventLang];
+    document.querySelectorAll('.label').forEach((el, i) => {
+      el.textContent = langLabels[i];
+    });
+
+    document.getElementById('event-title').textContent = eventTitle;
 
     const targetDate = new Date(eventDate).getTime();
 
-    function updateCountdown(){
+    function updateCountdown() {
 
-      const now = new Date().getTime();
+      const now = Date.now();
       const distance = targetDate - now;
 
-      if(distance <= 0){
+      if (distance <= 0) {
+        ['days','hours','minutes','seconds'].forEach(id => {
+          document.getElementById(id).textContent = '00';
+        });
         return;
       }
 
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+      const days    = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours   = Math.floor((distance / (1000 * 60 * 60)) % 24);
       const minutes = Math.floor((distance / (1000 * 60)) % 60);
       const seconds = Math.floor((distance / 1000) % 60);
 
-      document.getElementById('days').innerHTML =
-        String(days).padStart(2,'0');
-
-      document.getElementById('hours').innerHTML =
-        String(hours).padStart(2,'0');
-
-      document.getElementById('minutes').innerHTML =
-        String(minutes).padStart(2,'0');
-
-      document.getElementById('seconds').innerHTML =
-        String(seconds).padStart(2,'0');
+      document.getElementById('days').textContent    = String(days).padStart(2, '0');
+      document.getElementById('hours').textContent   = String(hours).padStart(2, '0');
+      document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+      document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
 
     }
 
     updateCountdown();
-
     setInterval(updateCountdown, 1000);
 
   </script>
 
 </body>
+
 </html>
